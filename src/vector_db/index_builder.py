@@ -6,15 +6,19 @@ from .factory import VectorDBFactory
 class VectorIndexBuilder:
     """向量索引构建器"""
     
-    def __init__(self, db_type: str = "faiss", **kwargs):
+    def __init__(self, db_type: str = "faiss", vector_db=None, **kwargs):
         """初始化向量索引构建器
         
         Args:
             db_type: 数据库类型，支持"faiss"、"chromadb"
+            vector_db: 已创建的向量数据库实例（可选）
             **kwargs: 初始化参数
         """
         self.db_type = db_type
-        self.db = VectorDBFactory.create(db_type, **kwargs)
+        if vector_db:
+            self.db = vector_db
+        else:
+            self.db = VectorDBFactory.create(db_type, **kwargs)
     
     def build_index(self, vectors: Optional[List[np.ndarray]] = None, vector_ids: Optional[List[str]] = None, metadatas: Optional[List[Dict[str, Any]]] = None, documents: Optional[List[str]] = None) -> bool:
         """构建向量索引

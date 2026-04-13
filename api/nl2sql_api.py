@@ -252,7 +252,9 @@ async def import_from_database(request: DatabaseImportRequest):
         cursor.execute(query)
         
         documents = []
+        row_count = 0
         for row in cursor.fetchall():
+            row_count += 1
             # 组合所有列的值为一个文档
             document_parts = []
             for i, value in enumerate(row):
@@ -264,11 +266,14 @@ async def import_from_database(request: DatabaseImportRequest):
             
             if document_parts:
                 documents.append(" | ".join(document_parts))
+            else:
+                # 即使所有值都是None，也添加一个空文档，确保至少有一条记录
+                documents.append("空记录")
         
         cursor.close()
         conn.close()
         
-        if not documents:
+        if row_count == 0:
             return {
                 "success": False,
                 "error": "数据库中没有找到数据"
