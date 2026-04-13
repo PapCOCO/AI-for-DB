@@ -45,7 +45,7 @@ class DatabaseImportRequest(BaseModel):
     password: str
     database: str
     table: str
-    column: Optional[str] = None
+    columns: List[str] = []
     vector_db_type: str = "faiss"
 
 
@@ -242,13 +242,28 @@ async def import_from_database(request: DatabaseImportRequest):
         cursor = conn.cursor()
         
         # 查询数据
-        query = f"SELECT {request.column} FROM {request.table}"
+        if request.columns:
+            columns_str = ", ".join(request.columns)
+            query = f"SELECT {columns_str} FROM {request.table}"
+        else:
+            # 如果没有指定列，查询所有列
+            query = f"SELECT * FROM {request.table}"
+        
         cursor.execute(query)
         
         documents = []
         for row in cursor.fetchall():
-            if row[0]:
-                documents.append(str(row[0]))
+            # 组合所有列的值为一个文档
+            document_parts = []
+            for i, value in enumerate(row):
+                if value is not None:
+                    if request.columns:
+                        document_parts.append(f"{request.columns[i]}: {value}")
+                    else:
+                        document_parts.append(str(value))
+            
+            if document_parts:
+                documents.append(" | ".join(document_parts))
         
         cursor.close()
         conn.close()

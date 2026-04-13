@@ -338,10 +338,19 @@ async function importFromDatabase() {
     const password = document.getElementById('db-password').value;
     const database = document.getElementById('db-name').value.trim();
     const table = document.getElementById('db-table').value.trim();
-    const column = document.getElementById('db-column').value.trim();
     const vectorType = document.getElementById('db-vector-type').value;
+    const importAllColumns = document.getElementById('import-all-columns').checked;
     
-    if (!user || !database || !table || !column) {
+    // 获取选中的列
+    let columns = [];
+    const columnsSelect = document.getElementById('db-columns');
+    for (let i = 0; i < columnsSelect.options.length; i++) {
+        if (columnsSelect.options[i].selected) {
+            columns.push(columnsSelect.options[i].value);
+        }
+    }
+    
+    if (!user || !database || !table) {
         alert('请填写必要的数据库连接信息');
         return;
     }
@@ -359,7 +368,7 @@ async function importFromDatabase() {
                 password: password,
                 database: database,
                 table: table,
-                column: column,
+                columns: importAllColumns ? [] : columns,
                 vector_db_type: vectorType
             })
         });
@@ -494,8 +503,25 @@ async function exploreColumns() {
         const data = await response.json();
         
         if (data.success) {
+            // 填充列选择下拉框
+            const columnsSelect = document.getElementById('db-columns');
+            columnsSelect.innerHTML = '';
+            data.columns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column.name;
+                option.textContent = `${column.name} (${column.type})`;
+                columnsSelect.appendChild(option);
+            });
+            
             displayColumnsResult('列列表', data.columns, (column) => {
-                document.getElementById('db-column').value = column;
+                // 找到对应的选项并选中
+                const columnsSelect = document.getElementById('db-columns');
+                for (let i = 0; i < columnsSelect.options.length; i++) {
+                    if (columnsSelect.options[i].value === column) {
+                        columnsSelect.options[i].selected = true;
+                        break;
+                    }
+                }
             });
         } else {
             alert('探索失败: ' + data.error);
