@@ -241,7 +241,8 @@ curl -X POST http://localhost:8000/api/vector/import-db \
 │   └── static/
 │       ├── css/         # 样式文件
 │       └── js/          # 脚本文件
-├── tests/               # 测试文件
+├── tests/               # 单元测试文件
+├── comprehensive_test.py # 全面功能测试脚本
 ├── .env                 # 环境配置
 ├── requirements.txt     # 依赖包
 └── README.md            # 项目文档
@@ -249,7 +250,12 @@ curl -X POST http://localhost:8000/api/vector/import-db \
 
 ## 测试
 
-### 运行测试
+### 全面功能测试（推荐）
+```bash
+python comprehensive_test.py
+```
+
+### 运行单元测试
 ```bash
 python -m pytest tests/
 ```
