@@ -35,11 +35,11 @@ class VectorDB(ABC):
         pass
     
     @abstractmethod
-    def search(self, query_vector: np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: str or np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
         """搜索相似向量
         
         Args:
-            query_vector: 查询向量
+            query: 查询向量或查询字符串
             k: 返回结果数量
             
         Returns:
