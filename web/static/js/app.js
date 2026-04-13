@@ -3,6 +3,18 @@ document.addEventListener('DOMContentLoaded', function() {
     initTabs();
     initNL2SQL();
     initVectorDB();
+    
+    // 监听CSV列选择变化
+    const csvColumnSelect = document.getElementById('csv-column');
+    if (csvColumnSelect) {
+        csvColumnSelect.addEventListener('change', function() {
+            const selectedColumn = this.value;
+            if (selectedColumn && window.csvContent) {
+                const documents = parseCSVContent(window.csvContent, selectedColumn);
+                document.getElementById('documents').value = documents.join('\n');
+            }
+        });
+    }
 });
 
 function clearSensitiveFields() {
@@ -176,13 +188,81 @@ function handleFileUpload(event) {
     if (!file) return;
     
     document.getElementById('file-name').textContent = file.name;
+    const csvOptionsDiv = document.getElementById('csv-options');
+    const csvColumnSelect = document.getElementById('csv-column');
     
     const reader = new FileReader();
     reader.onload = function(e) {
         const content = e.target.result;
-        document.getElementById('documents').value = content;
+        
+        // 检查是否是CSV文件
+        if (file.name.endsWith('.csv')) {
+            // 解析CSV文件，显示列选择
+            const lines = content.split('\n').filter(line => line.trim());
+            if (lines.length > 0) {
+                const headers = parseCSVLine(lines[0]);
+                
+                // 填充列选择下拉框
+                csvColumnSelect.innerHTML = '<option value="">请选择</option>';
+                headers.forEach(header => {
+                    csvColumnSelect.innerHTML += `<option value="${header}">${header}</option>`;
+                });
+                
+                csvOptionsDiv.style.display = 'block';
+                
+                // 保存完整内容供后续处理
+                window.csvContent = content;
+                window.csvHeaders = headers;
+            }
+        } else {
+            // 不是CSV文件，直接显示
+            csvOptionsDiv.style.display = 'none';
+            document.getElementById('documents').value = content;
+        }
     };
     reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current.trim());
+    
+    return result;
+}
+
+function parseCSVContent(content, columnName) {
+    const lines = content.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+    
+    const headers = parseCSVLine(lines[0]);
+    const columnIndex = headers.indexOf(columnName);
+    
+    if (columnIndex === -1) return [];
+    
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values[columnIndex]) {
+            result.push(values[columnIndex]);
+        }
+    }
+    
+    return result;
 }
 
 async function buildIndex() {
@@ -436,7 +516,7 @@ function displayExploreResult(title, items, clickHandler) {
     
     let html = `<h4>${title}</h4><ul>`;
     items.forEach(item => {
-        html += `<li onclick="${clickHandler ? `document.getElementById('db-name').value = '${item}'; document.getElementById('db-table').value = ''; document.getElementById('db-column').value = '';` : ''}">${item}</li>`;
+        html += `<li data-value="${item}">${item}</li>`;
     });
     html += '</ul>';
     
@@ -463,7 +543,7 @@ function displayColumnsResult(title, columns, clickHandler) {
     html += '<thead><tr><th>列名</th><th>类型</th><th>允许空</th><th>键</th></tr></thead><tbody>';
     
     columns.forEach(column => {
-        html += `<tr onclick="${clickHandler ? `document.getElementById('db-column').value = '${column.name}';` : ''}">
+        html += `<tr data-column="${column.name}">
             <td>${column.name}</td>
             <td>${column.type}</td>
             <td>${column.null ? '是' : '否'}</td>

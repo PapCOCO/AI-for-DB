@@ -256,6 +256,10 @@ header h1 {
     white-space: nowrap;
 }
 
+.csv-options {
+    margin: 15px 0;
+}
+
 .privacy-note {
     font-size: 0.8em;
     color: #28a745;
