@@ -125,8 +125,7 @@ async function generateSQL() {
             alert('生成SQL失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     } finally {
         generateBtn.disabled = false;
         generateBtn.textContent = originalText;
@@ -171,8 +170,7 @@ async function executeSQL() {
             alert('执行SQL失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     } finally {
         executeBtn.disabled = false;
         executeBtn.textContent = originalText;
@@ -183,7 +181,7 @@ function displayQueryResult(result) {
     const container = document.getElementById('query-result');
     
     if (!container) {
-        console.error('查询结果容器元素不存在');
+        alert('查询结果容器元素不存在，请刷新页面');
         return;
     }
     
@@ -241,7 +239,7 @@ function handleFileUpload(event) {
     const documentsEl = document.getElementById('documents');
     
     if (!fileNameEl || !csvOptionsDiv || !csvColumnSelect || !documentsEl) {
-        console.error('页面元素缺失，请刷新页面');
+        alert('页面元素缺失，请刷新页面');
         return;
     }
     
@@ -358,8 +356,7 @@ async function buildIndex() {
             alert('构建索引失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -398,8 +395,7 @@ async function searchVector() {
             alert('搜索失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -467,8 +463,7 @@ async function importFromDatabase() {
             alert('导入失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -525,8 +520,7 @@ async function exploreDatabases() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -584,8 +578,7 @@ async function exploreTables() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -656,8 +649,7 @@ async function exploreColumns() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
+        alert('请求失败，请检查后端服务是否启动\n' + error.message);
     }
 }
 
@@ -665,7 +657,7 @@ function displayExploreResult(title, items, clickHandler) {
     const resultDiv = document.getElementById('db-explore-result');
     
     if (!resultDiv) {
-        console.error('结果容器元素不存在');
+        alert('结果容器元素不存在，请刷新页面');
         return;
     }
     
@@ -695,7 +687,7 @@ function displayColumnsResult(title, columns, clickHandler) {
     const resultDiv = document.getElementById('db-explore-result');
     
     if (!resultDiv) {
-        console.error('结果容器元素不存在');
+        alert('结果容器元素不存在，请刷新页面');
         return;
     }
     
@@ -732,7 +724,7 @@ function displaySearchResult(results) {
     const container = document.getElementById('search-result');
     
     if (!container) {
-        console.error('搜索结果容器元素不存在');
+        alert('搜索结果容器元素不存在，请刷新页面');
         return;
     }
     
