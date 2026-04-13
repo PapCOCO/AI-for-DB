@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from .base import BaseLLM
 from .openai_llm import OpenAILLM
+from .deepseek_llm import DeepSeekLLM
 from .huggingface_llm import HuggingFaceLLM
 from .mock_llm import MockLLM
 
@@ -15,13 +16,19 @@ class QueryOptimizer:
         """初始化查询优化器
         
         Args:
-            llm_type: LLM类型，支持"openai"、"huggingface"或"mock"
+            llm_type: LLM类型，支持"openai"、"deepseek"、"huggingface"或"mock"
             llm_kwargs: LLM初始化参数
         """
         # 初始化LLM用于辅助优化
         if llm_type == "openai":
             try:
                 self.llm = OpenAILLM(**llm_kwargs)
+            except ValueError:
+                # 如果没有API key，使用MockLLM
+                self.llm = MockLLM()
+        elif llm_type == "deepseek":
+            try:
+                self.llm = DeepSeekLLM(**llm_kwargs)
             except ValueError:
                 # 如果没有API key，使用MockLLM
                 self.llm = MockLLM()

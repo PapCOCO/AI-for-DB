@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional
 from .base import BaseLLM, BaseSQLValidator
 from .openai_llm import OpenAILLM
+from .deepseek_llm import DeepSeekLLM
 from .huggingface_llm import HuggingFaceLLM
 from .mock_llm import MockLLM
 from .sql_validator import SQLValidator
@@ -14,13 +15,19 @@ class NL2SQLService:
         """初始化NL2SQL服务
         
         Args:
-            llm_type: LLM类型，支持"openai"、"huggingface"或"mock"
+            llm_type: LLM类型，支持"openai"、"deepseek"、"huggingface"或"mock"
             llm_kwargs: LLM初始化参数
         """
         # 初始化LLM
         if llm_type == "openai":
             try:
                 self.llm = OpenAILLM(**llm_kwargs)
+            except ValueError:
+                # 如果没有API key，使用MockLLM
+                self.llm = MockLLM()
+        elif llm_type == "deepseek":
+            try:
+                self.llm = DeepSeekLLM(**llm_kwargs)
             except ValueError:
                 # 如果没有API key，使用MockLLM
                 self.llm = MockLLM()
