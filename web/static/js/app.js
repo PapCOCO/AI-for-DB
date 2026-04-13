@@ -128,10 +128,8 @@ async function generateSQL() {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
-        if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.textContent = originalText;
-        }
+        generateBtn.disabled = false;
+        generateBtn.textContent = originalText;
     }
 }
 
@@ -176,10 +174,8 @@ async function executeSQL() {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
-        if (executeBtn) {
-            executeBtn.disabled = false;
-            executeBtn.textContent = originalText;
-        }
+        executeBtn.disabled = false;
+        executeBtn.textContent = originalText;
     }
 }
 
