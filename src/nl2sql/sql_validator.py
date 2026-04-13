@@ -71,6 +71,16 @@ class SQLValidator(BaseSQLValidator):
         # 移除首尾空白
         sql = sql.strip()
         
+        # 只保留第一条SQL语句（按分号分割）
+        if ';' in sql:
+            statements = sql.split(';')
+            # 找到第一条SELECT语句
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt and re.match(r'^\s*SELECT\s+', stmt, re.IGNORECASE):
+                    sql = stmt
+                    break
+        
         # 移除末尾的分号
         if sql.endswith(';'):
             sql = sql[:-1].strip()
