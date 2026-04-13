@@ -79,13 +79,24 @@ function initNL2SQL() {
 }
 
 async function generateSQL() {
-    const nlQuery = document.getElementById('nl-query').value.trim();
+    const nlQueryEl = document.getElementById('nl-query');
+    const generateBtn = document.getElementById('generate-sql');
+    const sqlOutputEl = document.getElementById('sql-output');
+    const optimizationTipsEl = document.getElementById('optimization-tips');
+    const llmTypeEl = document.getElementById('llm-type');
+    const apiKeyEl = document.getElementById('api-key');
+    
+    if (!nlQueryEl || !generateBtn || !sqlOutputEl || !optimizationTipsEl || !llmTypeEl || !apiKeyEl) {
+        alert('页面元素缺失，请刷新页面');
+        return;
+    }
+    
+    const nlQuery = nlQueryEl.value.trim();
     if (!nlQuery) {
         alert('请输入自然语言查询');
         return;
     }
     
-    const generateBtn = document.getElementById('generate-sql');
     const originalText = generateBtn.textContent;
     generateBtn.disabled = true;
     generateBtn.textContent = '生成中...';
@@ -98,16 +109,16 @@ async function generateSQL() {
             },
             body: JSON.stringify({
                 query: nlQuery,
-                llm_type: document.getElementById('llm-type').value,
-                api_key: document.getElementById('api-key').value
+                llm_type: llmTypeEl.value,
+                api_key: apiKeyEl.value
             })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            document.getElementById('sql-output').textContent = data.sql;
-            document.getElementById('optimization-tips').innerHTML = data.optimization_tips 
+            sqlOutputEl.textContent = data.sql;
+            optimizationTipsEl.innerHTML = data.optimization_tips 
                 ? `<ul>${data.optimization_tips.map(tip => `<li>${tip}</li>`).join('')}</ul>` 
                 : '暂无优化建议';
         } else {
@@ -117,19 +128,28 @@ async function generateSQL() {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = originalText;
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = originalText;
+        }
     }
 }
 
 async function executeSQL() {
-    const sqlOutput = document.getElementById('sql-output').textContent.trim();
+    const sqlOutputEl = document.getElementById('sql-output');
+    const executeBtn = document.getElementById('execute-sql');
+    
+    if (!sqlOutputEl || !executeBtn) {
+        alert('页面元素缺失，请刷新页面');
+        return;
+    }
+    
+    const sqlOutput = sqlOutputEl.textContent.trim();
     if (!sqlOutput) {
         alert('请先生成SQL');
         return;
     }
     
-    const executeBtn = document.getElementById('execute-sql');
     const originalText = executeBtn.textContent;
     executeBtn.disabled = true;
     executeBtn.textContent = '执行中...';
@@ -156,13 +176,20 @@ async function executeSQL() {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
-        executeBtn.disabled = false;
-        executeBtn.textContent = originalText;
+        if (executeBtn) {
+            executeBtn.disabled = false;
+            executeBtn.textContent = originalText;
+        }
     }
 }
 
 function displayQueryResult(result) {
     const container = document.getElementById('query-result');
+    
+    if (!container) {
+        console.error('查询结果容器元素不存在');
+        return;
+    }
     
     if (!result || result.length === 0) {
         container.innerHTML = '<p>查询结果为空</p>';
