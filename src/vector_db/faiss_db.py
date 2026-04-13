@@ -8,7 +8,7 @@ from .base import VectorDB
 class FAISSDB(VectorDB):
     """FAISS向量数据库实现"""
     
-    def __init__(self, dimension: int = 128, index_type: str = "HNSW", save_path: str = None):
+    def __init__(self, dimension: int = 16, index_type: str = "FLAT", save_path: str = None):
         """初始化FAISS向量数据库
         
         Args:
@@ -80,15 +80,10 @@ class FAISSDB(VectorDB):
         try:
             # 如果查询是字符串，转换为向量
             if isinstance(query, str):
-                try:
-                    from sentence_transformers import SentenceTransformer
-                    model = SentenceTransformer('all-MiniLM-L6-v2')
-                    query_vector = model.encode([query])[0]
-                except ImportError:
-                    # 如果没有安装sentence-transformers，使用简单的向量生成
-                    import hashlib
-                    hash_val = hashlib.md5(query.encode()).digest()
-                    query_vector = np.array([float(b) / 255.0 for b in hash_val])
+                # 使用简单的哈希方法，避免SentenceTransformer问题
+                import hashlib
+                hash_val = hashlib.md5(query.encode()).digest()
+                query_vector = np.array([float(b) / 255.0 for b in hash_val])
             else:
                 query_vector = query
             

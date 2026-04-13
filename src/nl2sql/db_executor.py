@@ -86,17 +86,17 @@ class DBExecutor:
                 result = conn.execute(text(sql))
                 
                 # 获取列名
-                columns = result.keys()
+                columns = list(result.keys())
                 
                 # 获取数据
                 data = []
                 for row in result:
-                    data.append(dict(zip(columns, row)))
+                    data.append(list(row))
                 
                 return {
                     "success": True,
                     "data": data,
-                    "columns": list(columns),
+                    "columns": columns,
                     "message": "SQL执行成功"
                 }
         except SQLAlchemyError as e:

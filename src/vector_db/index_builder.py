@@ -33,26 +33,18 @@ class VectorIndexBuilder:
             是否构建成功
         """
         if documents:
-            # 为文档生成向量
-            try:
-                from sentence_transformers import SentenceTransformer
-                model = SentenceTransformer('all-MiniLM-L6-v2')
-                vectors = model.encode(documents)
-                vector_ids = [f"doc_{i}" for i in range(len(documents))]
-                metadatas = [{"document": doc} for doc in documents]
-            except ImportError:
-                # 如果没有安装sentence-transformers，使用简单的向量生成
-                import hashlib
-                vectors = []
-                vector_ids = []
-                metadatas = []
-                for i, doc in enumerate(documents):
-                    # 使用哈希生成简单的向量
-                    hash_val = hashlib.md5(doc.encode()).digest()
-                    vector = np.array([float(b) / 255.0 for b in hash_val])
-                    vectors.append(vector)
-                    vector_ids.append(f"doc_{i}")
-                    metadatas.append({"document": doc})
+            # 为文档生成向量 - 直接使用简单的哈希方法，避免SentenceTransformer问题
+            import hashlib
+            vectors = []
+            vector_ids = []
+            metadatas = []
+            for i, doc in enumerate(documents):
+                # 使用哈希生成简单的向量
+                hash_val = hashlib.md5(doc.encode()).digest()
+                vector = np.array([float(b) / 255.0 for b in hash_val])
+                vectors.append(vector)
+                vector_ids.append(f"doc_{i}")
+                metadatas.append({"document": doc})
         
         if vectors and vector_ids:
             return self.db.add_vectors(vectors, vector_ids, metadatas)
