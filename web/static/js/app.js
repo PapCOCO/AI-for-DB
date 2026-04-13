@@ -85,6 +85,11 @@ async function generateSQL() {
         return;
     }
     
+    const generateBtn = document.getElementById('generate-sql');
+    const originalText = generateBtn.textContent;
+    generateBtn.disabled = true;
+    generateBtn.textContent = '生成中...';
+    
     try {
         const response = await fetch('/api/nl2sql/generate', {
             method: 'POST',
@@ -111,6 +116,9 @@ async function generateSQL() {
     } catch (error) {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = originalText;
     }
 }
 
@@ -120,6 +128,11 @@ async function executeSQL() {
         alert('请先生成SQL');
         return;
     }
+    
+    const executeBtn = document.getElementById('execute-sql');
+    const originalText = executeBtn.textContent;
+    executeBtn.disabled = true;
+    executeBtn.textContent = '执行中...';
     
     try {
         const response = await fetch('/api/nl2sql/execute', {
@@ -142,6 +155,9 @@ async function executeSQL() {
     } catch (error) {
         console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
+    } finally {
+        executeBtn.disabled = false;
+        executeBtn.textContent = originalText;
     }
 }
 
