@@ -34,8 +34,8 @@ class VectorIndexBuilder:
         """
         if documents:
             # 为文档生成向量
-            from sentence_transformers import SentenceTransformer
             try:
+                from sentence_transformers import SentenceTransformer
                 model = SentenceTransformer('all-MiniLM-L6-v2')
                 vectors = model.encode(documents)
                 vector_ids = [f"doc_{i}" for i in range(len(documents))]
