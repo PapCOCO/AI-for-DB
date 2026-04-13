@@ -125,6 +125,7 @@ async function generateSQL() {
             alert('生成SQL失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
         generateBtn.disabled = false;
@@ -170,6 +171,7 @@ async function executeSQL() {
             alert('执行SQL失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     } finally {
         executeBtn.disabled = false;
@@ -356,6 +358,7 @@ async function buildIndex() {
             alert('构建索引失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
@@ -395,6 +398,7 @@ async function searchVector() {
             alert('搜索失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
@@ -463,6 +467,7 @@ async function importFromDatabase() {
             alert('导入失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
@@ -520,6 +525,7 @@ async function exploreDatabases() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
@@ -578,6 +584,7 @@ async function exploreTables() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
@@ -649,6 +656,7 @@ async function exploreColumns() {
             alert('探索失败: ' + data.error);
         }
     } catch (error) {
+        console.error('Error:', error);
         alert('请求失败，请检查后端服务是否启动');
     }
 }
