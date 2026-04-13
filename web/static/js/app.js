@@ -122,7 +122,8 @@ async function generateSQL() {
                 ? `<ul>${data.optimization_tips.map(tip => `<li>${tip}</li>`).join('')}</ul>` 
                 : '暂无优化建议';
         } else {
-            alert('生成SQL失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('生成SQL失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -356,7 +357,8 @@ async function buildIndex() {
         if (data.success) {
             alert('索引构建成功！');
         } else {
-            alert('构建索引失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('构建索引失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -396,7 +398,8 @@ async function searchVector() {
         if (data.success) {
             displaySearchResult(data.results);
         } else {
-            alert('搜索失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('搜索失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -465,7 +468,8 @@ async function importFromDatabase() {
         if (data.success) {
             alert(data.message);
         } else {
-            alert('导入失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('导入失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -523,7 +527,8 @@ async function exploreDatabases() {
                 }
             });
         } else {
-            alert('探索失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('探索失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -582,7 +587,8 @@ async function exploreTables() {
                 }
             });
         } else {
-            alert('探索失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('探索失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -654,7 +660,8 @@ async function exploreColumns() {
                 }
             });
         } else {
-            alert('探索失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('探索失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
