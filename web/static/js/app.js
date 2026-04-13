@@ -25,7 +25,16 @@ function clearSensitiveFields() {
     document.getElementById('db-password').value = '';
     document.getElementById('db-name').value = '';
     document.getElementById('db-table').value = '';
-    document.getElementById('db-column').value = '';
+    
+    // 清空列选择
+    const columnsSelect = document.getElementById('db-columns');
+    if (columnsSelect) {
+        for (let i = 0; i < columnsSelect.options.length; i++) {
+            columnsSelect.options[i].selected = false;
+        }
+    }
+    
+    document.getElementById('import-all-columns').checked = false;
     document.getElementById('documents').value = '';
     document.getElementById('file-name').textContent = '';
     document.getElementById('sql-output').textContent = '';
@@ -417,7 +426,13 @@ async function exploreDatabases() {
             displayExploreResult('数据库列表', data.databases, (db) => {
                 document.getElementById('db-name').value = db;
                 document.getElementById('db-table').value = '';
-                document.getElementById('db-column').value = '';
+                // 清空列选择
+                const columnsSelect = document.getElementById('db-columns');
+                if (columnsSelect) {
+                    for (let i = 0; i < columnsSelect.options.length; i++) {
+                        columnsSelect.options[i].selected = false;
+                    }
+                }
             });
         } else {
             alert('探索失败: ' + data.error);
@@ -460,7 +475,13 @@ async function exploreTables() {
         if (data.success) {
             displayExploreResult('表列表', data.tables, (table) => {
                 document.getElementById('db-table').value = table;
-                document.getElementById('db-column').value = '';
+                // 清空列选择
+                const columnsSelect = document.getElementById('db-columns');
+                if (columnsSelect) {
+                    for (let i = 0; i < columnsSelect.options.length; i++) {
+                        columnsSelect.options[i].selected = false;
+                    }
+                }
             });
         } else {
             alert('探索失败: ' + data.error);
