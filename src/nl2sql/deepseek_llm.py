@@ -7,7 +7,7 @@ from .base import BaseLLM
 class DeepSeekLLM(BaseLLM):
     """DeepSeek LLM实现"""
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "deepseek-reasoner"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "deepseek-chat"):
         """初始化DeepSeek LLM
         
         Args:
