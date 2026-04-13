@@ -42,6 +42,7 @@ class SQLValidator(BaseSQLValidator):
             r'\bsp_',
             r'\b;\s*--',
             r'\b;\s*#',
+            r';.*;',  # 多个分号表示多语句
             r'\bUNION\b.*\bSELECT\b',
         ]
         
@@ -56,12 +57,25 @@ class SQLValidator(BaseSQLValidator):
             self.error = "只允许SELECT语句"
             return False
         
-        # 检查是否包含分号（防止多语句执行）
-        if ';' in sql:
-            self.error = "SQL语句不应包含分号"
-            return False
-        
         return True
+    
+    def clean_sql(self, sql: str) -> str:
+        """清理SQL语句
+        
+        Args:
+            sql: 要清理的SQL语句
+            
+        Returns:
+            清理后的SQL语句
+        """
+        # 移除首尾空白
+        sql = sql.strip()
+        
+        # 移除末尾的分号
+        if sql.endswith(';'):
+            sql = sql[:-1].strip()
+        
+        return sql
     
     def get_error(self) -> str:
         """获取验证错误信息

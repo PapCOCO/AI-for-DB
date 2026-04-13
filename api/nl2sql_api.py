@@ -197,7 +197,7 @@ async def search_vector(request: SearchVectorRequest):
             }
         
         db = vector_dbs[request.db_type]
-        results = db.search(query=request.query, top_k=5)
+        results = db.search(query=request.query, k=5)
         
         formatted_results = []
         for result in results:

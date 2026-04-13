@@ -79,9 +79,23 @@ class ChromaDB(VectorDB):
             print(f"批量添加向量失败: {e}")
             return False
     
-    def search(self, query_vector: np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: str or np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
         """搜索相似向量"""
         try:
+            # 如果查询是字符串，转换为向量
+            if isinstance(query, str):
+                try:
+                    from sentence_transformers import SentenceTransformer
+                    model = SentenceTransformer('all-MiniLM-L6-v2')
+                    query_vector = model.encode([query])[0]
+                except ImportError:
+                    # 如果没有安装sentence-transformers，使用简单的向量生成
+                    import hashlib
+                    hash_val = hashlib.md5(query.encode()).digest()
+                    query_vector = np.array([float(b) / 255.0 for b in hash_val])
+            else:
+                query_vector = query
+            
             # 确保查询向量是正确的形状
             if query_vector.ndim == 2:
                 query_vector = query_vector[0]
@@ -96,10 +110,13 @@ class ChromaDB(VectorDB):
             search_results = []
             if results.get("ids") and results.get("distances") and results.get("metadatas"):
                 for i in range(len(results["ids"][0])):
+                    metadata = results["metadatas"][0][i] if results["metadatas"][0][i] else {}
                     search_results.append({
                         "vector_id": results["ids"][0][i],
                         "distance": float(results["distances"][0][i]),
-                        "metadata": results["metadatas"][0][i] if results["metadatas"][0][i] else {}
+                        "score": 1.0 / (1.0 + float(results["distances"][0][i])),  # 转换为相似度分数
+                        "document": metadata.get("document", ""),
+                        "metadata": metadata
                     })
             
             return search_results

@@ -62,6 +62,9 @@ class NL2SQLService:
             # 生成SQL
             sql = self.llm.generate_sql(natural_language, schema)
             
+            # 清理SQL
+            sql = self.validator.clean_sql(sql)
+            
             # 验证SQL
             is_valid = self.validator.validate(sql)
             error = self.validator.get_error() if not is_valid else None
@@ -91,6 +94,9 @@ class NL2SQLService:
             包含优化结果的字典
         """
         try:
+            # 清理SQL
+            sql = self.validator.clean_sql(sql)
+            
             # 验证SQL
             is_valid = self.validator.validate(sql)
             if not is_valid:
@@ -120,6 +126,10 @@ class NL2SQLService:
             包含评估结果的字典
         """
         try:
+            # 清理SQL
+            original_sql = self.validator.clean_sql(original_sql)
+            optimized_sql = self.validator.clean_sql(optimized_sql)
+            
             # 验证SQL
             if not self.validator.validate(original_sql):
                 return {
