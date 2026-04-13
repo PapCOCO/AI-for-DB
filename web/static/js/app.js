@@ -168,7 +168,8 @@ async function executeSQL() {
         if (data.success) {
             displayQueryResult(data.result);
         } else {
-            alert('执行SQL失败: ' + data.error);
+            const errorMessage = data.error || '未知错误';
+            alert('执行SQL失败: ' + errorMessage);
         }
     } catch (error) {
         console.error('Error:', error);
