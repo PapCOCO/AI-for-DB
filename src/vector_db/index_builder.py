@@ -46,7 +46,7 @@ class VectorIndexBuilder:
                 vector_ids.append(f"doc_{i}")
                 metadatas.append({"document": doc})
         
-        if vectors and vector_ids:
+        if vectors is not None and vector_ids is not None:
             return self.db.add_vectors(vectors, vector_ids, metadatas)
         return False
     
