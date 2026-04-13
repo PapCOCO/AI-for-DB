@@ -13,6 +13,7 @@ pymongo
 openai
 huggingface-hub
 transformers
+sentence-transformers
 langchain
 langchain-openai
 
