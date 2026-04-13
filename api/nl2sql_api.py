@@ -45,7 +45,7 @@ class DatabaseImportRequest(BaseModel):
     password: str
     database: str
     table: str
-    column: str
+    column: Optional[str] = None
     vector_db_type: str = "faiss"
 
 
