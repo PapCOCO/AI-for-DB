@@ -20,15 +20,24 @@
 - **向量检索**：Top-K相似性搜索
 - **响应性能**：向量检索响应时间<100ms
 
+### 3. Web界面功能
+- **现代化界面**：响应式设计，美观易用
+- **NL2SQL界面**：自然语言转SQL，支持多种LLM
+- **向量数据库界面**：文档管理和相似度搜索
+- **数据库探索**：查看数据库结构、表和列信息
+- **文件上传**：支持.txt和.csv文件导入
+- **隐私保护**：敏感信息不保存，自动清空功能
+
 ## 技术栈
 
 | 类别 | 技术 |
 |------|------|
-| 编程语言 | Python 3.14+ |
+| 编程语言 | Python 3.14+, JavaScript |
 | API框架 | FastAPI + Uvicorn |
 | 向量数据库 | FAISS, ChromaDB |
 | LLM集成 | DeepSeek, OpenAI, HuggingFace |
 | 数据库 | SQLAlchemy (SQLite/PostgreSQL/MySQL) |
+| 前端技术 | HTML5, CSS3, JavaScript |
 | 测试 | pytest |
 
 ## 安装说明
@@ -81,7 +90,9 @@ LOG_LEVEL=INFO
 python src/main.py
 ```
 
-服务将在 `http://localhost:8000` 启动，可访问 `http://localhost:8000/docs` 查看API文档。
+服务将在 `http://localhost:8000` 启动：
+- **Web界面**：访问 `http://localhost:8000`
+- **API文档**：访问 `http://localhost:8000/docs`
 
 ### 2. 代码使用示例
 
@@ -136,44 +147,69 @@ print(stats)
 
 #### NL2SQL转换
 ```bash
-curl -X POST http://localhost:8000/nl2sql \
+curl -X POST http://localhost:8000/api/nl2sql/generate \
   -H "Content-Type: application/json" \
   -d '{
-    "natural_language": "查询所有年龄大于20的用户",
-    "schema": "CREATE TABLE users (id INT, name TEXT, age INT);",
-    "llm_type": "deepseek"
+    "query": "查询所有年龄大于20的用户",
+    "llm_type": "deepseek",
+    "api_key": "your_api_key"
   }'
 ```
 
 #### 执行SQL
 ```bash
-curl -X POST http://localhost:8000/execute-sql \
+curl -X POST http://localhost:8000/api/nl2sql/execute \
   -H "Content-Type: application/json" \
   -d '{
     "sql": "SELECT * FROM users WHERE age > 20"
   }'
 ```
 
-#### 优化查询
+#### 构建向量索引
 ```bash
-curl -X POST http://localhost:8000/optimize-query \
+curl -X POST http://localhost:8000/api/vector/build \
   -H "Content-Type: application/json" \
   -d '{
-    "sql": "SELECT * FROM users WHERE age > 20 ORDER BY name",
-    "schema": "CREATE TABLE users (id INT, name TEXT, age INT);",
-    "llm_type": "deepseek"
+    "documents": ["文档1", "文档2", "文档3"],
+    "db_type": "faiss"
   }'
 ```
 
-#### 自然语言分析
+#### 搜索向量
 ```bash
-curl -X POST http://localhost:8000/analyze \
+curl -X POST http://localhost:8000/api/vector/search \
   -H "Content-Type: application/json" \
   -d '{
-    "natural_language": "分析年龄大于20的用户数量",
-    "schema": "CREATE TABLE users (id INT, name TEXT, age INT);",
-    "llm_type": "deepseek",
-    "optimize": true
+    "query": "搜索查询",
+    "db_type": "faiss"
+  }'
+```
+
+#### 探索数据库
+```bash
+curl -X POST http://localhost:8000/api/vector/explore-db \
+  -H "Content-Type: application/json" \
+  -d '{
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "password"
+  }'
+```
+
+#### 从数据库导入
+```bash
+curl -X POST http://localhost:8000/api/vector/import-db \
+  -H "Content-Type: application/json" \
+  -d '{
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "password",
+    "database": "mydb",
+    "table": "users",
+    "column": "name",
+    "vector_db_type": "faiss"
   }'
 ```
 
@@ -200,6 +236,11 @@ curl -X POST http://localhost:8000/analyze \
 │       └── index_builder.py  # 索引构建器
 ├── api/
 │   └── nl2sql_api.py    # RESTful API接口
+├── web/
+│   ├── index.html      # Web界面主页面
+│   └── static/
+│       ├── css/         # 样式文件
+│       └── js/          # 脚本文件
 ├── tests/               # 测试文件
 ├── .env                 # 环境配置
 ├── requirements.txt     # 依赖包
@@ -241,6 +282,14 @@ python test_vector_db.py
 - **高效索引**：支持HNSW等高级索引算法
 - **快速检索**：响应时间<100ms
 - **灵活配置**：支持不同维度和索引类型
+
+### 4. Web界面
+- **现代化设计**：响应式布局，美观易用
+- **NL2SQL界面**：自然语言转SQL，支持多种LLM
+- **向量数据库界面**：文档管理和相似度搜索
+- **数据库探索**：查看数据库结构、表和列信息
+- **文件上传**：支持.txt和.csv文件导入
+- **隐私保护**：敏感信息不保存，自动清空功能
 
 ## 性能指标
 
