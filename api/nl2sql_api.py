@@ -91,10 +91,25 @@ async def generate_sql(request: GenerateSQLRequest):
         
         schema = """CREATE TABLE users (
             id INTEGER PRIMARY KEY,
-            name TEXT,
+            name TEXT NOT NULL,
             age INTEGER,
-            email TEXT,
-            created_at TEXT
+            email TEXT
+        );
+
+CREATE TABLE products (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            price REAL,
+            category TEXT,
+            description TEXT
+        );
+
+CREATE TABLE orders (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            amount REAL,
+            order_date TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )"""
         
         result = service.convert(request.query, schema)

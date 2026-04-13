@@ -30,6 +30,15 @@ class DBExecutor:
                 )
                 """))
                 conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS products (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    price REAL,
+                    category TEXT,
+                    description TEXT
+                )
+                """))
+                conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS orders (
                     id INTEGER PRIMARY KEY,
                     user_id INTEGER,
@@ -44,6 +53,14 @@ class DBExecutor:
                 (1, 'Alice', 25, 'alice@example.com'),
                 (2, 'Bob', 30, 'bob@example.com'),
                 (3, 'Charlie', 35, 'charlie@example.com')
+                """))
+                conn.execute(text("""
+                INSERT OR IGNORE INTO products (id, name, price, category, description) VALUES
+                (1, '笔记本电脑', 5999.0, '电子产品', '高性能办公笔记本'),
+                (2, '无线鼠标', 89.0, '电子产品', '人体工学设计无线鼠标'),
+                (3, '机械键盘', 299.0, '电子产品', '青轴机械键盘'),
+                (4, '耳机', 199.0, '电子产品', '降噪蓝牙耳机'),
+                (5, '显示器', 1299.0, '电子产品', '27英寸高清显示器')
                 """))
                 conn.execute(text("""
                 INSERT OR IGNORE INTO orders (id, user_id, amount, order_date) VALUES

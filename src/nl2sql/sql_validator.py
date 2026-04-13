@@ -75,6 +75,27 @@ class SQLValidator(BaseSQLValidator):
         if sql.endswith(';'):
             sql = sql[:-1].strip()
         
+        # 修复常见的SQL语法错误
+        # 1. 修复 "ROM" -> "FROM"
+        sql = re.sub(r'\bROM\b', 'FROM', sql, flags=re.IGNORECASE)
+        
+        # 2. 修复缺失的 SELECT 关键字（如果语句以 FROM 开头）
+        if re.match(r'^\s*FROM\s+', sql, re.IGNORECASE):
+            sql = 'SELECT * ' + sql
+        
+        # 3. 修复缺失的 SELECT 关键字（如果语句以 WHERE 开头）
+        if re.match(r'^\s*WHERE\s+', sql, re.IGNORECASE):
+            sql = 'SELECT * FROM table ' + sql
+        
+        # 4. 确保以 SELECT 开头
+        if not re.match(r'^\s*SELECT\s+', sql, re.IGNORECASE):
+            # 如果没有 SELECT 但有 FROM，添加 SELECT *
+            if re.search(r'\bFROM\s+\w+', sql, re.IGNORECASE):
+                sql = 'SELECT * ' + sql
+            else:
+                # 否则添加默认的 SELECT
+                sql = 'SELECT * FROM table WHERE ' + sql
+        
         return sql
     
     def get_error(self) -> str:
