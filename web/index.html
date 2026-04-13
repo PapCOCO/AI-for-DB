@@ -139,17 +139,6 @@
                                 <input type="text" id="db-table" placeholder="表名">
                             </div>
                             <div class="config-group">
-                                <label for="db-columns">选择要导入的列（可多选）</label>
-                                <select id="db-columns" multiple size="4" style="height: 120px;">
-                                    <option value="">请选择列</option>
-                                </select>
-                            </div>
-                            <div class="config-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="import-all-columns"> 导入所有列
-                                </label>
-                            </div>
-                            <div class="config-group">
                                 <label for="db-vector-type">向量数据库</label>
                                 <select id="db-vector-type">
                                     <option value="faiss">FAISS</option>
@@ -160,7 +149,6 @@
                         <div class="explore-buttons">
                             <button id="explore-dbs" class="btn btn-primary">探索数据库</button>
                             <button id="explore-tables" class="btn btn-primary">探索表</button>
-                            <button id="explore-columns" class="btn btn-primary">探索列</button>
                         </div>
                         <button id="import-db" class="btn btn-primary">从数据库导入</button>
                     </div>

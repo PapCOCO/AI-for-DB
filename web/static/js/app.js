@@ -26,15 +26,6 @@ function clearSensitiveFields() {
     document.getElementById('db-name').value = '';
     document.getElementById('db-table').value = '';
     
-    // 清空列选择
-    const columnsSelect = document.getElementById('db-columns');
-    if (columnsSelect) {
-        for (let i = 0; i < columnsSelect.options.length; i++) {
-            columnsSelect.options[i].selected = false;
-        }
-    }
-    
-    document.getElementById('import-all-columns').checked = false;
     document.getElementById('documents').value = '';
     document.getElementById('file-name').textContent = '';
     document.getElementById('sql-output').textContent = '';
@@ -222,7 +213,6 @@ function initVectorDB() {
     const importDbBtn = document.getElementById('import-db');
     const exploreDbsBtn = document.getElementById('explore-dbs');
     const exploreTablesBtn = document.getElementById('explore-tables');
-    const exploreColumnsBtn = document.getElementById('explore-columns');
     
     buildIndexBtn.addEventListener('click', buildIndex);
     searchBtn.addEventListener('click', searchVector);
@@ -230,7 +220,6 @@ function initVectorDB() {
     importDbBtn.addEventListener('click', importFromDatabase);
     exploreDbsBtn.addEventListener('click', exploreDatabases);
     exploreTablesBtn.addEventListener('click', exploreTables);
-    exploreColumnsBtn.addEventListener('click', exploreColumns);
 }
 
 function handleFileUpload(event) {
@@ -415,10 +404,8 @@ async function importFromDatabase() {
     const databaseEl = document.getElementById('db-name');
     const tableEl = document.getElementById('db-table');
     const vectorTypeEl = document.getElementById('db-vector-type');
-    const importAllColumnsEl = document.getElementById('import-all-columns');
-    const columnsSelect = document.getElementById('db-columns');
     
-    if (!hostEl || !portEl || !userEl || !passwordEl || !databaseEl || !tableEl || !vectorTypeEl || !importAllColumnsEl || !columnsSelect) {
+    if (!hostEl || !portEl || !userEl || !passwordEl || !databaseEl || !tableEl || !vectorTypeEl) {
         alert('页面元素缺失，请刷新页面');
         return;
     }
@@ -430,15 +417,6 @@ async function importFromDatabase() {
     const database = databaseEl.value.trim();
     const table = tableEl.value.trim();
     const vectorType = vectorTypeEl.value;
-    const importAllColumns = importAllColumnsEl.checked;
-    
-    // 获取选中的列
-    let columns = [];
-    for (let i = 0; i < columnsSelect.options.length; i++) {
-        if (columnsSelect.options[i].selected) {
-            columns.push(columnsSelect.options[i].value);
-        }
-    }
     
     if (!user || !database || !table) {
         alert('请填写必要的数据库连接信息');
@@ -458,7 +436,7 @@ async function importFromDatabase() {
                 password: password,
                 database: database,
                 table: table,
-                columns: importAllColumns ? [] : columns,
+                columns: [],
                 vector_db_type: vectorType
             })
         });
@@ -484,9 +462,8 @@ async function exploreDatabases() {
     const passwordEl = document.getElementById('db-password');
     const dbNameEl = document.getElementById('db-name');
     const dbTableEl = document.getElementById('db-table');
-    const columnsSelect = document.getElementById('db-columns');
     
-    if (!hostEl || !portEl || !userEl || !passwordEl || !dbNameEl || !dbTableEl || !columnsSelect) {
+    if (!hostEl || !portEl || !userEl || !passwordEl || !dbNameEl || !dbTableEl) {
         alert('页面元素缺失，请刷新页面');
         return;
     }
@@ -521,10 +498,6 @@ async function exploreDatabases() {
             displayExploreResult('数据库列表', data.databases, (db) => {
                 dbNameEl.value = db;
                 dbTableEl.value = '';
-                // 清空列选择
-                for (let i = 0; i < columnsSelect.options.length; i++) {
-                    columnsSelect.options[i].selected = false;
-                }
             });
         } else {
             const errorMessage = data.error || '未知错误';
@@ -543,9 +516,8 @@ async function exploreTables() {
     const passwordEl = document.getElementById('db-password');
     const databaseEl = document.getElementById('db-name');
     const dbTableEl = document.getElementById('db-table');
-    const columnsSelect = document.getElementById('db-columns');
     
-    if (!hostEl || !portEl || !userEl || !passwordEl || !databaseEl || !dbTableEl || !columnsSelect) {
+    if (!hostEl || !portEl || !userEl || !passwordEl || !databaseEl || !dbTableEl) {
         alert('页面元素缺失，请刷新页面');
         return;
     }
@@ -581,83 +553,6 @@ async function exploreTables() {
         if (data.success) {
             displayExploreResult('表列表', data.tables, (table) => {
                 dbTableEl.value = table;
-                // 清空列选择
-                for (let i = 0; i < columnsSelect.options.length; i++) {
-                    columnsSelect.options[i].selected = false;
-                }
-            });
-        } else {
-            const errorMessage = data.error || '未知错误';
-            alert('探索失败: ' + errorMessage);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('请求失败，请检查后端服务是否启动');
-    }
-}
-
-async function exploreColumns() {
-    const hostEl = document.getElementById('db-host');
-    const portEl = document.getElementById('db-port');
-    const userEl = document.getElementById('db-user');
-    const passwordEl = document.getElementById('db-password');
-    const databaseEl = document.getElementById('db-name');
-    const tableEl = document.getElementById('db-table');
-    const columnsSelect = document.getElementById('db-columns');
-    
-    if (!hostEl || !portEl || !userEl || !passwordEl || !databaseEl || !tableEl || !columnsSelect) {
-        alert('页面元素缺失，请刷新页面');
-        return;
-    }
-    
-    const host = hostEl.value.trim();
-    const port = portEl.value;
-    const user = userEl.value.trim();
-    const password = passwordEl.value;
-    const database = databaseEl.value.trim();
-    const table = tableEl.value.trim();
-    
-    if (!user || !database || !table) {
-        alert('请填写数据库用户名、数据库名称和表名');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/vector/explore-table', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                host: host,
-                port: parseInt(port),
-                user: user,
-                password: password,
-                database: database,
-                table: table
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // 填充列选择下拉框
-            columnsSelect.innerHTML = '';
-            data.columns.forEach(column => {
-                const option = document.createElement('option');
-                option.value = column.name;
-                option.textContent = `${column.name} (${column.type})`;
-                columnsSelect.appendChild(option);
-            });
-            
-            displayColumnsResult('列列表', data.columns, (column) => {
-                // 找到对应的选项并选中
-                for (let i = 0; i < columnsSelect.options.length; i++) {
-                    if (columnsSelect.options[i].value === column) {
-                        columnsSelect.options[i].selected = true;
-                        break;
-                    }
-                }
             });
         } else {
             const errorMessage = data.error || '未知错误';
@@ -695,43 +590,6 @@ function displayExploreResult(title, items, clickHandler) {
         const listItems = resultDiv.querySelectorAll('li');
         listItems.forEach((item, index) => {
             item.addEventListener('click', () => clickHandler(items[index]));
-        });
-    }
-}
-
-function displayColumnsResult(title, columns, clickHandler) {
-    const resultDiv = document.getElementById('db-explore-result');
-    
-    if (!resultDiv) {
-        alert('结果容器元素不存在，请刷新页面');
-        return;
-    }
-    
-    if (!columns || columns.length === 0) {
-        resultDiv.innerHTML = `<h4>${title}</h4><p>未找到任何列</p>`;
-        return;
-    }
-    
-    let html = `<h4>${title}</h4><table>`;
-    html += '<thead><tr><th>列名</th><th>类型</th><th>允许空</th><th>键</th></tr></thead><tbody>';
-    
-    columns.forEach(column => {
-        html += `<tr data-column="${column.name}">
-            <td>${column.name}</td>
-            <td>${column.type}</td>
-            <td>${column.null ? '是' : '否'}</td>
-            <td>${column.key}</td>
-        </tr>`;
-    });
-    
-    html += '</tbody></table>';
-    resultDiv.innerHTML = html;
-    
-    // 添加点击事件
-    if (clickHandler) {
-        const tableRows = resultDiv.querySelectorAll('tbody tr');
-        tableRows.forEach((row, index) => {
-            row.addEventListener('click', () => clickHandler(columns[index].name));
         });
     }
 }
