@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB for AI & AI for DB</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DB for AI & AI for DB</h1>
+            <p class="subtitle">智能数据库与AI集成平台</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="nl2sql">NL2SQL</button>
+            <button class="tab-btn" data-tab="vector">向量数据库</button>
+            <button id="clear-all" class="tab-btn tab-btn-danger">🧹 清除数据</button>
+        </nav>
+
+        <main class="content">
+            <section id="nl2sql" class="tab-content active">
+                <div class="section-header">
+                    <h2>自然语言转SQL</h2>
+                </div>
+                
+                <div class="config-panel">
+                    <div class="config-group">
+                        <label for="llm-type">选择大模型</label>
+                        <select id="llm-type">
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="huggingface">HuggingFace</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="api-key">API Key <span class="privacy-note">（不会保存）</span></label>
+                        <input type="password" id="api-key" placeholder="输入API Key" autocomplete="off">
+                    </div>
+                </div>
+                <p class="privacy-warning">🔒 隐私保护：您输入的API Key、数据库信息等敏感数据仅在本次会话中使用，不会被保存。</p>
+
+                <div class="input-area">
+                    <label for="nl-query">自然语言查询</label>
+                    <textarea id="nl-query" placeholder="输入您的查询，例如：查询所有年龄大于30岁的用户"></textarea>
+                    <div class="action-buttons">
+                        <button id="generate-sql" class="btn btn-primary">生成SQL</button>
+                        <button id="execute-sql" class="btn btn-success">执行SQL</button>
+                    </div>
+                </div>
+
+                <div class="output-area">
+                    <div class="output-section">
+                        <h3>生成的SQL</h3>
+                        <pre id="sql-output"></pre>
+                    </div>
+                    <div class="output-section">
+                        <h3>查询结果</h3>
+                        <div id="query-result"></div>
+                    </div>
+                </div>
+                <div class="output-section">
+                    <h3>优化建议</h3>
+                    <div id="optimization-tips"></div>
+                </div>
+            </section>
+
+            <section id="vector" class="tab-content">
+                <div class="section-header">
+                    <h2>向量数据库</h2>
+                </div>
+                
+                <div class="config-panel">
+                    <div class="config-group">
+                        <label for="vector-db">选择向量数据库</label>
+                        <select id="vector-db">
+                            <option value="faiss">FAISS</option>
+                            <option value="chroma">ChromaDB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <label for="documents">输入文档（每行一个）</label>
+                    <textarea id="documents" placeholder="输入文档，每行一个"></textarea>
+                    <div class="file-upload-section">
+                        <label class="file-upload-btn">
+                            上传文件
+                            <input type="file" id="file-upload" accept=".txt,.csv">
+                        </label>
+                        <span id="file-name" class="file-name"></span>
+                    </div>
+                    <button id="build-index" class="btn btn-primary">构建索引</button>
+                </div>
+
+                <div class="input-area">
+                    <label for="vector-query">搜索查询</label>
+                    <input type="text" id="vector-query" placeholder="输入搜索查询">
+                    <button id="search-vector" class="btn btn-success">搜索</button>
+                </div>
+
+                <div class="input-area">
+                    <h3>从数据库导入</h3>
+                    <div class="db-import-form">
+                        <div class="config-panel">
+                            <div class="config-group">
+                                <label for="db-host">主机</label>
+                                <input type="text" id="db-host" value="localhost" placeholder="数据库主机">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-port">端口</label>
+                                <input type="number" id="db-port" value="3306" placeholder="数据库端口">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-user">用户名</label>
+                                <input type="text" id="db-user" placeholder="数据库用户名">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-password">密码</label>
+                                <input type="password" id="db-password" placeholder="数据库密码" autocomplete="off">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-name">数据库</label>
+                                <input type="text" id="db-name" placeholder="数据库名称">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-table">表</label>
+                                <input type="text" id="db-table" placeholder="表名">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-column">列</label>
+                                <input type="text" id="db-column" placeholder="要导入的列名">
+                            </div>
+                            <div class="config-group">
+                                <label for="db-vector-type">向量数据库</label>
+                                <select id="db-vector-type">
+                                    <option value="faiss">FAISS</option>
+                                    <option value="chroma">ChromaDB</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="explore-buttons">
+                            <button id="explore-dbs" class="btn btn-primary">探索数据库</button>
+                            <button id="explore-tables" class="btn btn-primary">探索表</button>
+                            <button id="explore-columns" class="btn btn-primary">探索列</button>
+                        </div>
+                        <button id="import-db" class="btn btn-primary">从数据库导入</button>
+                    </div>
+                    <div id="db-explore-result" class="explore-result"></div>
+                </div>
+
+                <div class="output-area">
+                    <div class="output-section">
+                        <h3>搜索结果</h3>
+                        <div id="search-result"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
