@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import chromadb
 from chromadb.config import Settings
 from .base import VectorDB
@@ -79,7 +79,7 @@ class ChromaDB(VectorDB):
             print(f"批量添加向量失败: {e}")
             return False
     
-    def search(self, query: str or np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: Union[str, np.ndarray], k: int = 5) -> List[Dict[str, Any]]:
         """搜索相似向量"""
         try:
             # 如果查询是字符串，转换为向量

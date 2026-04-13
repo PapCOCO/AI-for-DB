@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import numpy as np
 
 
@@ -35,7 +35,7 @@ class VectorDB(ABC):
         pass
     
     @abstractmethod
-    def search(self, query: str or np.ndarray, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: Union[str, np.ndarray], k: int = 5) -> List[Dict[str, Any]]:
         """搜索相似向量
         
         Args:
