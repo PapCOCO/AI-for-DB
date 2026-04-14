@@ -1,38 +1,11 @@
 # 基础依赖
+python-dotenv
 
-# 数据处理（先安装，避免编译错误）
-numpy
-scikit-learn
-
-# 向量数据库
-faiss-cpu
-chromadb
-pymongo
-
-# LLM 接口
-openai
-huggingface-hub
-transformers
-sentence-transformers
-langchain
-langchain-openai
-
-# API 框架
-fastapi
-uvicorn
-pydantic
-pydantic-settings
+# 前端框架
+streamlit
 
 # 数据库
-sqlalchemy
-psycopg2-binary
 mysql-connector-python
 
-# 测试
-pytest
-pytest-cov
-
-# 工具
-python-dotenv
-loguru
-pyjwt
+# LLM 接口
+requests
