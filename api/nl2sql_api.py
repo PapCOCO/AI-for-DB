@@ -26,10 +26,20 @@ class GenerateSQLRequest(BaseModel):
     query: str
     llm_type: str = "deepseek"
     api_key: Optional[str] = None
+    db_host: str = "localhost"
+    db_port: int = 3306
+    db_user: str = "root"
+    db_password: str = ""
+    db_name: str = ""
 
 
 class ExecuteSQLRequest(BaseModel):
     sql: str
+    db_host: str = "localhost"
+    db_port: int = 3306
+    db_user: str = "root"
+    db_password: str = ""
+    db_name: str = ""
 
 
 class BuildIndexRequest(BaseModel):
@@ -89,28 +99,89 @@ async def generate_sql(request: GenerateSQLRequest):
         
         service = NL2SQLService(llm_type=request.llm_type, api_key=request.api_key)
         
-        schema = """CREATE TABLE users (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            age INTEGER,
-            email TEXT
-        );
+        # 动态获取数据库 schema
+        if request.db_name:
+            # 连接 MySQL 获取真实 schema
+            try:
+                import mysql.connector
+                conn = mysql.connector.connect(
+                    host=request.db_host,
+                    port=request.db_port,
+                    user=request.db_user,
+                    password=request.db_password,
+                    database=request.db_name
+                )
+                cursor = conn.cursor()
+                
+                # 获取所有表
+                cursor.execute("SHOW TABLES")
+                tables = [row[0] for row in cursor.fetchall()]
+                
+                # 构建真实 schema
+                schema_parts = []
+                for table in tables:
+                    cursor.execute(f"DESCRIBE {table}")
+                    columns = []
+                    for row in cursor.fetchall():
+                        col_name = row[0]
+                        col_type = row[1]
+                        columns.append(f"{col_name} {col_type}")
+                    table_schema = f"CREATE TABLE {table} ({', '.join(columns)})"
+                    schema_parts.append(table_schema)
+                
+                schema = "\n\n".join(schema_parts)
+                cursor.close()
+                conn.close()
+                print(f"成功获取数据库 {request.db_name} 的 schema，包含 {len(tables)} 个表")
+            except Exception as e:
+                # 如果获取失败，使用默认 schema
+                print(f"获取数据库 schema 失败: {e}")
+                schema = """CREATE TABLE users (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    age INTEGER,
+                    email TEXT
+                );
 
 CREATE TABLE products (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            price REAL,
-            category TEXT,
-            description TEXT
-        );
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    price REAL,
+                    category TEXT,
+                    description TEXT
+                );
 
 CREATE TABLE orders (
-            id INTEGER PRIMARY KEY,
-            user_id INTEGER,
-            amount REAL,
-            order_date TEXT,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )"""
+                    id INTEGER PRIMARY KEY,
+                    user_id INTEGER,
+                    amount REAL,
+                    order_date TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )"""
+        else:
+            # 使用默认 schema
+            schema = """CREATE TABLE users (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                age INTEGER,
+                email TEXT
+            );
+
+CREATE TABLE products (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                price REAL,
+                category TEXT,
+                description TEXT
+            );
+
+CREATE TABLE orders (
+                id INTEGER PRIMARY KEY,
+                user_id INTEGER,
+                amount REAL,
+                order_date TEXT,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )"""
         
         result = service.convert(request.query, schema)
         
@@ -151,7 +222,20 @@ CREATE TABLE orders (
 async def execute_sql(request: ExecuteSQLRequest):
     """执行SQL"""
     try:
-        result = db_executor.execute(request.sql)
+        # 根据用户提供的数据库信息创建执行器
+        if request.db_name:
+            executor = DBExecutor.from_mysql(
+                request.db_host,
+                request.db_port,
+                request.db_user,
+                request.db_password,
+                request.db_name
+            )
+        else:
+            # 使用默认的 SQLite 执行器
+            executor = db_executor
+        
+        result = executor.execute(request.sql)
         
         if result["success"]:
             formatted_result = []

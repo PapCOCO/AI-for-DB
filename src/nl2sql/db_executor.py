@@ -6,6 +6,23 @@ from sqlalchemy.exc import SQLAlchemyError
 class DBExecutor:
     """数据库执行器"""
     
+    @classmethod
+    def from_mysql(cls, host, port, user, password, database):
+        """从 MySQL 连接参数创建执行器
+        
+        Args:
+            host: MySQL 主机地址
+            port: MySQL 端口
+            user: MySQL 用户名
+            password: MySQL 密码
+            database: MySQL 数据库名
+            
+        Returns:
+            DBExecutor 实例
+        """
+        db_url = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
+        return cls(db_url)
+    
     def __init__(self, db_url: str = None):
         """初始化数据库执行器
         
