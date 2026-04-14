@@ -35,3 +35,5 @@ pytest-cov
 # 工具
 python-dotenv
 loguru
+pyjwt
+passlib[bcrypt]

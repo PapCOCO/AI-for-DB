@@ -81,6 +81,32 @@ API_PORT=8000
 
 # 日志配置
 LOG_LEVEL=INFO
+
+# JWT 配置
+SECRET_KEY=your_jwt_secret_key
+```
+
+### 4. Docker 部署
+
+**使用 Docker Compose**：
+```bash
+# 构建并启动服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 停止服务
+docker-compose down
+```
+
+**使用 Docker**：
+```bash
+# 构建镜像
+docker build -t db-for-ai .
+
+# 运行容器
+docker run -p 8000:8000 --env-file .env db-for-ai
 ```
 
 ## 使用方法
@@ -114,6 +140,21 @@ optimize_result = service.optimize_query(
     "CREATE TABLE users (id INT, name TEXT, age INT);"
 )
 print(optimize_result)
+```
+
+#### 用户认证使用
+```python
+from src.auth.user import User
+from src.auth.auth_service import AuthService
+
+# 验证用户
+user = AuthService.authenticate_user("admin", "password")
+if user:
+    # 生成访问令牌
+    access_token = AuthService.create_access_token(user)
+    print(f"Access token: {access_token}")
+else:
+    print("Authentication failed")
 ```
 
 #### 向量数据库使用
@@ -156,19 +197,21 @@ curl -X POST http://localhost:8000/api/nl2sql/generate \
   }'
 ```
 
-#### 执行SQL
+#### 执行SQL（需要认证）
 ```bash
 curl -X POST http://localhost:8000/api/nl2sql/execute \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_access_token" \
   -d '{
     "sql": "SELECT * FROM users WHERE age > 20"
   }'
 ```
 
-#### 构建向量索引
+#### 构建向量索引（需要认证）
 ```bash
 curl -X POST http://localhost:8000/api/vector/build \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_access_token" \
   -d '{
     "documents": ["文档1", "文档2", "文档3"],
     "db_type": "faiss"
@@ -185,10 +228,11 @@ curl -X POST http://localhost:8000/api/vector/search \
   }'
 ```
 
-#### 探索数据库
+#### 探索数据库（需要认证）
 ```bash
 curl -X POST http://localhost:8000/api/vector/explore-db \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_access_token" \
   -d '{
     "host": "localhost",
     "port": 3306,
@@ -197,10 +241,11 @@ curl -X POST http://localhost:8000/api/vector/explore-db \
   }'
 ```
 
-#### 从数据库导入
+#### 从数据库导入（需要认证）
 ```bash
 curl -X POST http://localhost:8000/api/vector/import-db \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_access_token" \
   -d '{
     "host": "localhost",
     "port": 3306,
@@ -208,8 +253,18 @@ curl -X POST http://localhost:8000/api/vector/import-db \
     "password": "password",
     "database": "mydb",
     "table": "users",
-    "column": "name",
+    "columns": [],
     "vector_db_type": "faiss"
+  }'
+```
+
+#### 用户登录
+```bash
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "password"
   }'
 ```
 
@@ -228,12 +283,17 @@ curl -X POST http://localhost:8000/api/vector/import-db \
 │   │   ├── query_optimizer.py # 查询优化器
 │   │   ├── sql_validator.py   # SQL验证器
 │   │   └── db_executor.py     # 数据库执行器
-│   └── vector_db/        # DB for AI 模块
-│       ├── base.py           # 向量数据库基础接口
-│       ├── faiss_db.py       # FAISS向量数据库
-│       ├── chroma_db.py      # ChromaDB向量数据库
-│       ├── factory.py        # 工厂类
-│       └── index_builder.py  # 索引构建器
+│   ├── vector_db/        # DB for AI 模块
+│   │   ├── base.py           # 向量数据库基础接口
+│   │   ├── faiss_db.py       # FAISS向量数据库
+│   │   ├── chroma_db.py      # ChromaDB向量数据库
+│   │   ├── factory.py        # 工厂类
+│   │   └── index_builder.py  # 索引构建器
+│   └── auth/             # 用户认证模块
+│       ├── __init__.py       # 模块初始化
+│       ├── user.py           # 用户模型
+│       ├── auth_service.py   # 认证服务
+│       └── middleware.py     # 认证中间件
 ├── api/
 │   └── nl2sql_api.py    # RESTful API接口
 ├── web/
@@ -244,7 +304,10 @@ curl -X POST http://localhost:8000/api/vector/import-db \
 ├── tests/               # 单元测试文件
 ├── comprehensive_test.py # 全面功能测试脚本
 ├── .env                 # 环境配置
+├── .env.example         # 环境配置示例
 ├── requirements.txt     # 依赖包
+├── Dockerfile           # Docker构建文件
+├── docker-compose.yml   # Docker Compose配置
 └── README.md            # 项目文档
 ```
 
@@ -295,6 +358,8 @@ python test_vector_db.py
 - **向量数据库界面**：文档管理和相似度搜索
 - **数据库探索**：查看数据库结构、表和列信息
 - **文件上传**：支持.txt和.csv文件导入
+- **数据可视化**：查询结果图表展示，支持表格和图表视图切换
+- **用户认证**：登录/登出功能，保护敏感操作
 - **隐私保护**：敏感信息不保存，自动清空功能
 
 ## 性能指标

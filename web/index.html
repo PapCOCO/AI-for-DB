@@ -1,28 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DB for AI & AI for DB</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DB for AI & AI for DB</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
 <body>
     <div class="container">
         <header>
-            <h1>DB for AI & AI for DB</h1>
-            <p class="subtitle">智能数据库与AI集成平台</p>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>DB for AI & AI for DB</h1>
+                    <p class="subtitle">智能数据库与AI集成平台</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-info" id="user-info" style="display: none;">
+                        <span id="username-display"></span>
+                        <button id="logout-btn" class="btn btn-sm btn-outline">登出</button>
+                    </div>
+                    <button id="login-btn" class="btn btn-sm btn-primary">登录</button>
+                    <div class="header-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-queries">0</span>
+                            <span class="stat-label">总查询数</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-vectors">0</span>
+                            <span class="stat-label">向量数量</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <nav class="tabs">
-            <button class="tab-btn active" data-tab="nl2sql">NL2SQL</button>
-            <button class="tab-btn" data-tab="vector">向量数据库</button>
-            <button id="clear-all" class="tab-btn tab-btn-danger">🧹 清除数据</button>
+            <button class="tab-btn active" data-tab="nl2sql">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                NL2SQL
+            </button>
+            <button class="tab-btn" data-tab="vector">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                向量数据库
+            </button>
+            <button id="clear-all" class="tab-btn tab-btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                清除数据
+            </button>
         </nav>
 
         <main class="content">
             <section id="nl2sql" class="tab-content active">
                 <div class="section-header">
                     <h2>自然语言转SQL</h2>
+                    <p class="section-description">通过自然语言快速生成SQL查询，支持多种大语言模型</p>
                 </div>
                 
                 <div class="config-panel">
@@ -36,7 +81,14 @@
                     </div>
                     <div class="config-group">
                         <label for="api-key">API Key <span class="privacy-note">（不会保存）</span></label>
-                        <input type="password" id="api-key" placeholder="输入API Key" autocomplete="off">
+                        <div class="password-input">
+                            <input type="password" id="api-key" placeholder="输入API Key" autocomplete="off">
+                            <button class="toggle-password" onclick="togglePassword('api-key')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p class="privacy-warning">🔒 隐私保护：您输入的API Key、数据库信息等敏感数据仅在本次会话中使用，不会被保存。</p>
@@ -45,30 +97,60 @@
                     <label for="nl-query">自然语言查询</label>
                     <textarea id="nl-query" placeholder="输入您的查询，例如：查询所有年龄大于30岁的用户"></textarea>
                     <div class="action-buttons">
-                        <button id="generate-sql" class="btn btn-primary">生成SQL</button>
-                        <button id="execute-sql" class="btn btn-success">执行SQL</button>
+                        <button id="generate-sql" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            生成SQL
+                        </button>
+                        <button id="execute-sql" class="btn btn-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                            </svg>
+                            执行SQL
+                        </button>
                     </div>
                 </div>
 
                 <div class="output-area">
                     <div class="output-section">
                         <h3>生成的SQL</h3>
-                        <pre id="sql-output"></pre>
+                        <div class="output-card">
+                            <pre id="sql-output"></pre>
+                            <button class="copy-btn" onclick="copyToClipboard('sql-output')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                复制
+                            </button>
+                        </div>
                     </div>
                     <div class="output-section">
-                        <h3>查询结果</h3>
-                        <div id="query-result"></div>
+                    <h3>查询结果</h3>
+                    <div class="result-options">
+                        <button id="view-table" class="btn btn-sm btn-outline" style="background: #f8f9fa; color: #333; border: 1px solid #dee2e6;">表格</button>
+                        <button id="view-chart" class="btn btn-sm btn-outline" style="background: #f8f9fa; color: #333; border: 1px solid #dee2e6;">图表</button>
+                    </div>
+                    <div class="output-card" id="query-result"></div>
+                    <div class="output-card" id="chart-container" style="display: none;">
+                        <canvas id="result-chart"></canvas>
                     </div>
                 </div>
                 <div class="output-section">
                     <h3>优化建议</h3>
-                    <div id="optimization-tips"></div>
+                    <div class="output-card" id="optimization-tips"></div>
                 </div>
             </section>
 
             <section id="vector" class="tab-content">
                 <div class="section-header">
                     <h2>向量数据库</h2>
+                    <p class="section-description">构建向量索引，实现高效的相似度搜索</p>
                 </div>
                 
                 <div class="config-panel">
@@ -86,6 +168,11 @@
                     <textarea id="documents" placeholder="输入文档，每行一个"></textarea>
                     <div class="file-upload-section">
                         <label class="file-upload-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
                             上传文件
                             <input type="file" id="file-upload" accept=".txt,.csv">
                         </label>
@@ -101,13 +188,28 @@
                             </div>
                         </div>
                     </div>
-                    <button id="build-index" class="btn btn-primary">构建索引</button>
+                    <button id="build-index" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        构建索引
+                    </button>
                 </div>
 
                 <div class="input-area">
                     <label for="vector-query">搜索查询</label>
-                    <input type="text" id="vector-query" placeholder="输入搜索查询">
-                    <button id="search-vector" class="btn btn-success">搜索</button>
+                    <div class="search-input">
+                        <input type="text" id="vector-query" placeholder="输入搜索查询">
+                        <button id="search-vector" class="btn btn-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            搜索
+                        </button>
+                    </div>
                 </div>
 
                 <div class="input-area">
@@ -128,7 +230,14 @@
                             </div>
                             <div class="config-group">
                                 <label for="db-password">密码</label>
-                                <input type="password" id="db-password" placeholder="数据库密码" autocomplete="off">
+                                <div class="password-input">
+                                    <input type="password" id="db-password" placeholder="数据库密码" autocomplete="off">
+                                    <button class="toggle-password" onclick="togglePassword('db-password')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                             <div class="config-group">
                                 <label for="db-name">数据库</label>
@@ -147,10 +256,29 @@
                             </div>
                         </div>
                         <div class="explore-buttons">
-                            <button id="explore-dbs" class="btn btn-primary">探索数据库</button>
-                            <button id="explore-tables" class="btn btn-primary">探索表</button>
+                            <button id="explore-dbs" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                探索数据库
+                            </button>
+                            <button id="explore-tables" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="6" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    <line x1="6" y1="12" x2="18" y2="12"></line>
+                                </svg>
+                                探索表
+                            </button>
                         </div>
-                        <button id="import-db" class="btn btn-primary">从数据库导入</button>
+                        <button id="import-db" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            从数据库导入
+                        </button>
                     </div>
                     <div id="db-explore-result" class="explore-result"></div>
                 </div>
@@ -158,11 +286,113 @@
                 <div class="output-area">
                     <div class="output-section">
                         <h3>搜索结果</h3>
-                        <div id="search-result"></div>
+                        <div class="output-card" id="search-result"></div>
                     </div>
                 </div>
             </section>
         </main>
+        
+        <footer>
+            <div class="footer-content">
+                <p>© 2026 DB for AI & AI for DB 项目 | 版本 1.0.0</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showAboutModal()">关于</a>
+                    <a href="#" onclick="showHelpModal()">帮助</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>关于项目</h3>
+                <button class="close-btn" onclick="closeModal('about-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>DB for AI & AI for DB 是一个针对华为数据库实习生岗位设计的演示项目，探索数据库与AI融合的两个核心方向：</p>
+                <ul>
+                    <li><strong>AI for DB</strong>：用AI增强数据库功能（如NL2SQL、查询优化）</li>
+                    <li><strong>DB for AI</strong>：用数据库支持AI应用（如向量存储、向量检索）</li>
+                </ul>
+                <p>项目采用现代技术栈，包括Python、FastAPI、FAISS、ChromaDB等，提供了直观的Web界面，方便用户使用和测试。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('about-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>使用帮助</h3>
+                <button class="close-btn" onclick="closeModal('help-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>NL2SQL 功能</h4>
+                <p>1. 选择大语言模型（DeepSeek、OpenAI或HuggingFace）</p>
+                <p>2. 输入API Key（如果使用真实模型）</p>
+                <p>3. 在文本框中输入自然语言查询</p>
+                <p>4. 点击"生成SQL"按钮生成SQL语句</p>
+                <p>5. 点击"执行SQL"按钮执行查询并查看结果</p>
+                
+                <h4>向量数据库功能</h4>
+                <p>1. 选择向量数据库类型（FAISS或ChromaDB）</p>
+                <p>2. 输入文档或上传文件</p>
+                <p>3. 点击"构建索引"按钮构建向量索引</p>
+                <p>4. 输入搜索查询并点击"搜索"按钮</p>
+                <p>5. 查看搜索结果和相似度分数</p>
+                
+                <h4>从数据库导入</h4>
+                <p>1. 填写数据库连接信息</p>
+                <p>2. 点击"探索数据库"查看可用数据库</p>
+                <p>3. 选择数据库后，点击"探索表"查看表结构</p>
+                <p>4. 选择表后，点击"从数据库导入"按钮</p>
+                
+                <h4>用户登录</h4>
+                <p>1. 点击右上角的"登录"按钮</p>
+                <p>2. 输入用户名和密码（测试账号：admin / password）</p>
+                <p>3. 登录后可以使用所有功能，包括执行SQL和向量数据库操作</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('help-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户登录</h3>
+                <button class="close-btn" onclick="closeModal('login-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="login-username">用户名</label>
+                    <input type="text" id="login-username" placeholder="输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">密码</label>
+                    <div class="password-input">
+                        <input type="password" id="login-password" placeholder="输入密码">
+                        <button class="toggle-password" onclick="togglePassword('login-password')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-note">
+                    <p>测试账号：admin / password</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('login-modal')">取消</button>
+                <button id="submit-login" class="btn btn-primary">登录</button>
+            </div>
+        </div>
     </div>
 
     <script src="/static/js/app.js"></script>

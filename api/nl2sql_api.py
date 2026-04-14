@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -8,6 +8,8 @@ from src.nl2sql.service import NL2SQLService
 from src.nl2sql.db_executor import DBExecutor
 from src.vector_db.factory import VectorDBFactory
 from src.vector_db.index_builder import VectorIndexBuilder
+from src.auth.auth_service import AuthService
+from src.auth.middleware import get_current_user, get_current_admin_user
 
 app = FastAPI(title="DB for AI & AI for DB API", description="智能数据库与AI集成平台")
 
@@ -18,8 +20,13 @@ if os.path.exists(web_dir):
 nl2sql_service = NL2SQLService(llm_type="mock")
 db_executor = DBExecutor()
 
-vector_dbs = {}
-index_builders = {}
+# 使用LRU缓存来管理向量数据库实例，避免内存泄漏
+from functools import lru_cache
+import weakref
+
+# 使用弱引用字典来存储向量数据库实例，当不再使用时会自动释放
+vector_dbs = weakref.WeakValueDictionary()
+index_builders = weakref.WeakValueDictionary()
 
 
 class GenerateSQLRequest(BaseModel):
@@ -73,6 +80,17 @@ class SearchVectorRequest(BaseModel):
     db_type: str = "faiss"
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: dict
+
+
 @app.get("/")
 async def root():
     """根路径，返回Web界面"""
@@ -80,6 +98,36 @@ async def root():
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {"message": "DB for AI & AI for DB API Service"}
+
+
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def login(request: LoginRequest):
+    """用户登录"""
+    user = AuthService.authenticate_user(request.username, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = AuthService.create_access_token(user)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "username": user.username,
+            "role": user.role
+        }
+    }
+
+
+@app.get("/api/auth/me")
+async def get_current_user_info(current_user = Depends(get_current_user)):
+    """获取当前用户信息"""
+    return {
+        "username": current_user.username,
+        "role": current_user.role
+    }
 
 
 @app.post("/api/nl2sql/generate", response_model=dict)
@@ -219,7 +267,7 @@ CREATE TABLE orders (
 
 
 @app.post("/api/nl2sql/execute", response_model=dict)
-async def execute_sql(request: ExecuteSQLRequest):
+async def execute_sql(request: ExecuteSQLRequest, current_user = Depends(get_current_user)):
     """执行SQL"""
     try:
         # 根据用户提供的数据库信息创建执行器
@@ -263,7 +311,7 @@ async def execute_sql(request: ExecuteSQLRequest):
 
 
 @app.post("/api/vector/build", response_model=dict)
-async def build_index(request: BuildIndexRequest):
+async def build_index(request: BuildIndexRequest, current_user = Depends(get_current_user)):
     """构建向量索引"""
     try:
         db = VectorDBFactory.create_vector_db(db_type=request.db_type)
@@ -317,7 +365,7 @@ async def search_vector(request: SearchVectorRequest):
 
 
 @app.post("/api/vector/import-db", response_model=dict)
-async def import_from_database(request: DatabaseImportRequest):
+async def import_from_database(request: DatabaseImportRequest, current_user = Depends(get_current_user)):
     """从数据库导入数据"""
     try:
         # 尝试导入MySQL连接器
@@ -399,7 +447,7 @@ async def import_from_database(request: DatabaseImportRequest):
 
 
 @app.post("/api/vector/explore-db", response_model=dict)
-async def explore_database(request: DatabaseExploreRequest):
+async def explore_database(request: DatabaseExploreRequest, current_user = Depends(get_current_user)):
     """探索数据库结构"""
     try:
         # 尝试导入MySQL连接器
@@ -452,7 +500,7 @@ async def explore_database(request: DatabaseExploreRequest):
 
 
 @app.post("/api/vector/explore-table", response_model=dict)
-async def explore_table(request: DatabaseImportRequest):
+async def explore_table(request: DatabaseImportRequest, current_user = Depends(get_current_user)):
     """探索表结构"""
     try:
         # 尝试导入MySQL连接器

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  db-for-ai:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY:-}
+    volumes:
+      - .:/app
+    restart: unless-stopped
