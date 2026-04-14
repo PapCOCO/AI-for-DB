@@ -49,7 +49,10 @@ class DeepSeekLLM(BaseLLM):
 3. 使用适当的表名和列名
 4. 考虑查询的语义正确性
 5. 处理NULL值和边界情况
-6. 如果查询是询问"库里面有什么"或类似含义，应该返回所有表的基本信息，或者使用UNION查询展示所有表的数据样例
+6. 如果查询是询问"库里面有什么"、"数据库中有什么"、"数据库里有什么"、"查看数据库内容"等类似含义，应该：
+   - 对于SQLite：使用 `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'` 查询所有表
+   - 对于MySQL：使用 `SHOW TABLES` 查询所有表
+   - 或者使用UNION查询展示所有表的前几行数据样例
 
 SQL语句：
 """
