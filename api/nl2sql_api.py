@@ -87,7 +87,7 @@ async def generate_sql(request: GenerateSQLRequest):
                 original_env[key] = os.environ[key]
             os.environ[key] = value
         
-        service = NL2SQLService(llm_type=request.llm_type)
+        service = NL2SQLService(llm_type=request.llm_type, api_key=request.api_key)
         
         schema = """CREATE TABLE users (
             id INTEGER PRIMARY KEY,

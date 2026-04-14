@@ -11,14 +11,18 @@ from .query_optimizer import QueryOptimizer
 class NL2SQLService:
     """自然语言到SQL转换服务"""
     
-    def __init__(self, llm_type: str = "mock", **llm_kwargs):
+    def __init__(self, llm_type: str = "mock", api_key: str = None, **llm_kwargs):
         """初始化NL2SQL服务
         
         Args:
             llm_type: LLM类型，支持"openai"、"deepseek"、"huggingface"或"mock"
+            api_key: API密钥（可选）
             llm_kwargs: LLM初始化参数
         """
         # 初始化LLM
+        if api_key:
+            llm_kwargs["api_key"] = api_key
+            
         if llm_type == "openai":
             try:
                 self.llm = OpenAILLM(**llm_kwargs)
