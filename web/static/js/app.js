@@ -116,6 +116,7 @@ async function generateSQL() {
     const optimizationTipsEl = document.getElementById('optimization-tips');
     const llmTypeEl = document.getElementById('llm-type');
     const apiKeyEl = document.getElementById('api-key');
+    const optimizeCheckbox = document.getElementById('optimize-query');
     
     if (!nlQueryEl || !generateBtn || !sqlOutputEl || !optimizationTipsEl || !llmTypeEl || !apiKeyEl) {
         showNotification('页面元素缺失，请刷新页面', 'error');
@@ -141,7 +142,8 @@ async function generateSQL() {
             body: JSON.stringify({
                 query: nlQuery,
                 llm_type: llmTypeEl.value,
-                api_key: apiKeyEl.value
+                api_key: apiKeyEl.value,
+                optimize: optimizeCheckbox ? optimizeCheckbox.checked : false
             })
         });
         
@@ -156,7 +158,7 @@ async function generateSQL() {
             sqlOutputEl.textContent = data.sql;
             optimizationTipsEl.innerHTML = data.optimization_tips 
                 ? `<ul>${data.optimization_tips.map(tip => `<li>${tip}</li>`).join('')}</ul>` 
-                : '暂无优化建议';
+                : '暂无优化建议 (勾选"优化查询"可启用优化)';
             
             // 更新统计信息
             updateStats('queries');
@@ -189,13 +191,6 @@ async function executeSQL() {
         return;
     }
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showNotification('请先登录', 'error');
-        document.getElementById('login-modal').style.display = 'block';
-        return;
-    }
-    
     const originalText = executeBtn.textContent;
     executeBtn.disabled = true;
     executeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 执行中...';
@@ -204,8 +199,7 @@ async function executeSQL() {
         const response = await fetch('/api/nl2sql/execute', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...getAuthHeaders()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 sql: sqlOutput
@@ -492,13 +486,6 @@ async function buildIndex() {
         return;
     }
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showNotification('请先登录', 'error');
-        document.getElementById('login-modal').style.display = 'block';
-        return;
-    }
-    
     const docList = documents.split('\n').filter(d => d.trim());
     
     const originalText = buildIndexBtn.innerHTML;
@@ -509,8 +496,7 @@ async function buildIndex() {
         const response = await fetch('/api/vector/build', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...getAuthHeaders()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 documents: docList,
@@ -601,13 +587,6 @@ async function importFromDatabase() {
         return;
     }
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showNotification('请先登录', 'error');
-        document.getElementById('login-modal').style.display = 'block';
-        return;
-    }
-    
     const host = hostEl.value.trim();
     const port = portEl.value;
     const user = userEl.value.trim();
@@ -629,8 +608,7 @@ async function importFromDatabase() {
         const response = await fetch('/api/vector/import-db', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...getAuthHeaders()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 host: host,
@@ -677,13 +655,6 @@ async function exploreDatabases() {
         return;
     }
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showNotification('请先登录', 'error');
-        document.getElementById('login-modal').style.display = 'block';
-        return;
-    }
-    
     const host = hostEl.value.trim();
     const port = portEl.value;
     const user = userEl.value.trim();
@@ -702,8 +673,7 @@ async function exploreDatabases() {
         const response = await fetch('/api/vector/explore-db', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...getAuthHeaders()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 host: host,
@@ -747,13 +717,6 @@ async function exploreTables() {
         return;
     }
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showNotification('请先登录', 'error');
-        document.getElementById('login-modal').style.display = 'block';
-        return;
-    }
-    
     const host = hostEl.value.trim();
     const port = portEl.value;
     const user = userEl.value.trim();
@@ -773,8 +736,7 @@ async function exploreTables() {
         const response = await fetch('/api/vector/explore-db', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...getAuthHeaders()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 host: host,

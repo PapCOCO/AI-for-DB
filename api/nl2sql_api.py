@@ -17,14 +17,25 @@ web_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "web")
 if os.path.exists(web_dir):
     app.mount("/static", StaticFiles(directory=os.path.join(web_dir, "static")), name="static")
 
-nl2sql_service = NL2SQLService(llm_type="mock")
 db_executor = DBExecutor()
 
-# 使用LRU缓存来管理向量数据库实例，避免内存泄漏
+# LLM实例缓存 - 复用LLM实例，避免重复创建
 from functools import lru_cache
-import weakref
+
+class LLMCache:
+    def __init__(self):
+        self._cache = {}
+    
+    def get_or_create(self, llm_type: str, api_key: str = None):
+        key = f"{llm_type}_{api_key or 'default'}"
+        if key not in self._cache:
+            self._cache[key] = NL2SQLService(llm_type=llm_type, api_key=api_key)
+        return self._cache[key]
+
+llm_cache = LLMCache()
 
 # 使用弱引用字典来存储向量数据库实例，当不再使用时会自动释放
+import weakref
 vector_dbs = weakref.WeakValueDictionary()
 index_builders = weakref.WeakValueDictionary()
 
@@ -38,6 +49,7 @@ class GenerateSQLRequest(BaseModel):
     db_user: str = "root"
     db_password: str = ""
     db_name: str = ""
+    optimize: bool = False  # 默认不进行查询优化
 
 
 class ExecuteSQLRequest(BaseModel):
@@ -145,7 +157,8 @@ async def generate_sql(request: GenerateSQLRequest):
                 original_env[key] = os.environ[key]
             os.environ[key] = value
         
-        service = NL2SQLService(llm_type=request.llm_type, api_key=request.api_key)
+        # 从缓存获取或创建LLM服务实例
+        service = llm_cache.get_or_create(request.llm_type, request.api_key)
         
         # 动态获取数据库 schema
         if request.db_name:
@@ -235,12 +248,14 @@ CREATE TABLE orders (
         
         if result["success"]:
             optimization_tips = None
-            try:
-                optimize_result = service.optimize_query(result["sql"], schema)
-                if optimize_result["success"]:
-                    optimization_tips = optimize_result.get("suggestions", [])
-            except:
-                pass
+            # 只有当用户明确要求优化时才进行查询优化
+            if request.optimize:
+                try:
+                    optimize_result = service.optimize_query(result["sql"], schema)
+                    if optimize_result["success"]:
+                        optimization_tips = optimize_result.get("suggestions", [])
+                except Exception as e:
+                    print(f"查询优化失败: {e}")
             
             return {
                 "success": True,
@@ -267,8 +282,8 @@ CREATE TABLE orders (
 
 
 @app.post("/api/nl2sql/execute", response_model=dict)
-async def execute_sql(request: ExecuteSQLRequest, current_user = Depends(get_current_user)):
-    """执行SQL"""
+async def execute_sql(request: ExecuteSQLRequest, current_user = Depends(get_current_user) if False else None):
+    """执行SQL（用户认证可选）"""
     try:
         # 根据用户提供的数据库信息创建执行器
         if request.db_name:
@@ -311,7 +326,7 @@ async def execute_sql(request: ExecuteSQLRequest, current_user = Depends(get_cur
 
 
 @app.post("/api/vector/build", response_model=dict)
-async def build_index(request: BuildIndexRequest, current_user = Depends(get_current_user)):
+async def build_index(request: BuildIndexRequest):
     """构建向量索引"""
     try:
         db = VectorDBFactory.create_vector_db(db_type=request.db_type)
@@ -365,7 +380,7 @@ async def search_vector(request: SearchVectorRequest):
 
 
 @app.post("/api/vector/import-db", response_model=dict)
-async def import_from_database(request: DatabaseImportRequest, current_user = Depends(get_current_user)):
+async def import_from_database(request: DatabaseImportRequest):
     """从数据库导入数据"""
     try:
         # 尝试导入MySQL连接器
@@ -447,7 +462,7 @@ async def import_from_database(request: DatabaseImportRequest, current_user = De
 
 
 @app.post("/api/vector/explore-db", response_model=dict)
-async def explore_database(request: DatabaseExploreRequest, current_user = Depends(get_current_user)):
+async def explore_database(request: DatabaseExploreRequest):
     """探索数据库结构"""
     try:
         # 尝试导入MySQL连接器
@@ -500,7 +515,7 @@ async def explore_database(request: DatabaseExploreRequest, current_user = Depen
 
 
 @app.post("/api/vector/explore-table", response_model=dict)
-async def explore_table(request: DatabaseImportRequest, current_user = Depends(get_current_user)):
+async def explore_table(request: DatabaseImportRequest):
     """探索表结构"""
     try:
         # 尝试导入MySQL连接器
