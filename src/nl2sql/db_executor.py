@@ -16,8 +16,34 @@ class DBExecutor:
         self.engine = create_engine(self.db_url)
         self._init_database()
     
+    def _detect_db_type(self) -> str:
+        """从 db_url 检测数据库类型"""
+        url = self.db_url.lower()
+        if url.startswith("mysql"):
+            return "mysql"
+        elif url.startswith("postgresql") or url.startswith("postgres"):
+            return "postgresql"
+        elif url.startswith("sqlite"):
+            return "sqlite"
+        else:
+            return "unknown"
+    
     def _init_database(self):
-        """初始化数据库（创建测试表）"""
+        """初始化数据库（根据数据库类型决定行为）"""
+        db_type = self._detect_db_type()
+        
+        # MySQL：已有业务库，只验证连接
+        if db_type == "mysql":
+            try:
+                with self.engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                    conn.commit()
+                print("MySQL 连接成功")
+            except SQLAlchemyError as e:
+                print(f"MySQL 连接失败: {e}")
+            return
+        
+        # SQLite / PostgreSQL：创建测试表
         try:
             with self.engine.connect() as conn:
                 # 创建测试表
