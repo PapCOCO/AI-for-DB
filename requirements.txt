@@ -36,4 +36,3 @@ pytest-cov
 python-dotenv
 loguru
 pyjwt
-passlib[bcrypt]

@@ -1,10 +1,7 @@
-from passlib.context import CryptContext
+import hashlib
 from datetime import datetime, timedelta
 import jwt
 import os
-
-# 密码加密上下文
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # 从环境变量获取JWT密钥，默认值用于开发环境
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
@@ -20,12 +17,12 @@ class User:
         self.created_at = datetime.utcnow()
     
     def hash_password(self, password: str) -> str:
-        """加密密码"""
-        return pwd_context.hash(password)
+        """加密密码 - 使用简单的SHA256哈希（演示项目用）"""
+        return hashlib.sha256(password.encode()).hexdigest()
     
     def verify_password(self, password: str) -> bool:
         """验证密码"""
-        return pwd_context.verify(password, self.password_hash)
+        return self.hash_password(password) == self.password_hash
     
     def create_access_token(self, data: dict) -> str:
         """创建访问令牌"""
