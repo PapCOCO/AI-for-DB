@@ -100,12 +100,20 @@ function initNL2SQL() {
         viewTableBtn.addEventListener('click', function() {
             if (currentQueryResult && currentQueryResult.length > 0) {
                 displayQueryResult(currentQueryResult);
+                // 更新按钮状态
+                viewTableBtn.classList.add('active');
+                viewChartBtn.classList.remove('active');
             }
         });
     }
     
     if (viewChartBtn) {
-        viewChartBtn.addEventListener('click', displayChart);
+        viewChartBtn.addEventListener('click', function() {
+            displayChart();
+            // 更新按钮状态
+            viewChartBtn.classList.add('active');
+            viewTableBtn.classList.remove('active');
+        });
     }
 }
 
@@ -215,6 +223,9 @@ async function executeSQL() {
         
         if (data.success) {
             displayQueryResult(data.result);
+            // 更新按钮状态
+            document.getElementById('view-table').classList.add('active');
+            document.getElementById('view-chart').classList.remove('active');
             showNotification('SQL执行成功！', 'success');
         } else {
             const errorMessage = data.error || '未知错误';
@@ -813,8 +824,8 @@ function displaySearchResult(results) {
     
     results.forEach((result, index) => {
         html += `
-            <div style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6; transition: all 0.3s ease; cursor: pointer;">
-                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">
+            <div style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; transition: all 0.2s ease; cursor: pointer;">
+                <div style="font-weight: 600; color: #3b82f6; margin-bottom: 8px;">
                     结果 ${index + 1} (相似度: ${(result.score * 100).toFixed(2)}%)
                 </div>
                 <div>${result.document}</div>
@@ -830,7 +841,7 @@ function displaySearchResult(results) {
     resultItems.forEach(item => {
         item.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.2)';
+            this.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.2)';
         });
         item.addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0)';
@@ -897,11 +908,11 @@ function showNotification(message, type = 'info', duration = 3000) {
     
     // 设置不同类型的背景色
     if (type === 'success') {
-        notification.style.backgroundColor = '#11998e';
+        notification.style.backgroundColor = '#10b981';
     } else if (type === 'error') {
-        notification.style.backgroundColor = '#ff6b6b';
+        notification.style.backgroundColor = '#ef4444';
     } else {
-        notification.style.backgroundColor = '#667eea';
+        notification.style.backgroundColor = '#3b82f6';
     }
     
     // 添加到页面
